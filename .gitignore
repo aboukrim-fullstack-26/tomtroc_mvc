@@ -1,0 +1,13 @@
+# secrets
+config/config.php
+
+# uploads
+public/uploads/
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+
+# logs
+*.log
