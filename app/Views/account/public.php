@@ -15,7 +15,7 @@ $since = $diff->y >= 1 ? ('Membre depuis ' . $diff->y . ' an' . ($diff->y > 1 ? 
       <div class="profile-name"><?= Helpers::e($user['pseudo']) ?></div>
       <div class="muted"><?= Helpers::e($since) ?></div>
       <div class="tiny-title">BIBLIOTHEQUE</div>
-      <div class="muted"><?= count($books) ?> livres</div>
+      <div class="muted"><?= (int)($bTotal ?? count($books)) ?> livres</div>
 
       <?php if (Auth::check() && (int)$user['id'] !== Auth::id()): ?>
         <form method="post" action="<?= Helpers::url('/message/nouveau') ?>">
@@ -54,5 +54,19 @@ $since = $diff->y >= 1 ? ('Membre depuis ' . $diff->y . ' an' . ($diff->y > 1 ? 
         </tbody>
       </table>
     </div>
+
+      <?php if (($bTotalPages ?? 1) > 1): ?>
+        <div class="pagination" style="display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap;">
+          <?php
+            $qs = $_GET;
+            for ($p = 1; $p <= (int)$bTotalPages; $p++):
+              $qs['bpage'] = $p;
+              $href = Helpers::url('/profil?' . http_build_query($qs));
+          ?>
+            <a class="btn <?= ($p === (int)($bpage ?? 1)) ? '' : 'outline' ?>" href="<?= $href ?>"><?= (int)$p ?></a>
+          <?php endfor; ?>
+        </div>
+      <?php endif; ?>
+
   </div>
 </section>

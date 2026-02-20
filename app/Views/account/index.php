@@ -133,5 +133,19 @@ $since = $diff->y >= 1 ? ('Membre depuis ' . $diff->y . ' an' . ($diff->y > 1 ? 
       <?php endif; ?>
       </tbody>
     </table>
-  </div>
+  
+	<?php if (($bTotalPages ?? 1) > 1): ?>
+        <div class="pagination" style="display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap;">
+          <?php
+            $qs = $_GET;
+            for ($p = 1; $p <= (int)$bTotalPages; $p++):
+              $qs['bpage'] = $p;
+              $href = Helpers::url('/mon-compte?' . http_build_query($qs) . '#books' .$p);
+          ?>
+            <a class="btn <?= ($p === (int)($bpage ?? 1)) ? '' : 'outline' ?>" href="<?= $href ?>"><?= (int)$p ?></a>
+          <?php endfor; ?>
+        </div>
+    <?php endif; ?>
+	 
+</div>
 </section>

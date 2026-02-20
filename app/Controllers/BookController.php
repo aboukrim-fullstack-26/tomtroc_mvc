@@ -153,8 +153,36 @@ final class BookController extends Controller
             if ($data['author'] === '') $errors[] = "Auteur requis.";
             if (!in_array($data['status'], ['available','unavailable'], true)) $errors[] = "Statut invalide.";
 
+// --- Photo: upload OU URL (champ libre avec validation) ---
+$photoSource = (string)($_POST['photo_source'] ?? 'upload');
+$photoUrl = trim((string)($_POST['photo_url'] ?? ''));
+$photoKeep = $_POST['photo_keep'] ?? null;
+
+if ($photoSource === 'url') {
+    if ($photoUrl === '') {
+        $errors[] = "Veuillez saisir une URL d'image.";
+    } elseif (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
+        $errors[] = "URL invalide.";
+    } else {
+        $u = parse_url($photoUrl);
+        $scheme = strtolower($u['scheme'] ?? '');
+        if (!in_array($scheme, ['http','https'], true)) {
+            $errors[] = "L'URL doit commencer par http ou https.";
+        } else {
+            $path = strtolower($u['path'] ?? '');
+            if (!preg_match('/\.(jpe?g|png|webp)$/', $path)) {
+                $errors[] = "L'URL doit pointer vers une image (.jpg, .png, .webp).";
+            } else {
+                $photoKeep = $photoUrl; // on stocke l'URL directement dans photo_path
+            }
+        }
+    }
+}
+
+
             if (!$errors) {
-                $bookId = Book::create(Auth::id(), $data, $_FILES['photo'] ?? null, $_POST['photo_keep'] ?? null);
+                $bookId = $photoFile = ($photoSource === 'upload') ? ($_FILES['photo'] ?? null) : null;
+                $bookId = Book::create(Auth::id(), $data, $photoFile, $photoKeep);
                 Helpers::redirect('/livre?id=' . $bookId);
             }
         }
@@ -191,8 +219,36 @@ final class BookController extends Controller
             if ($data['author'] === '') $errors[] = "Auteur requis.";
             if (!in_array($data['status'], ['available','unavailable'], true)) $errors[] = "Statut invalide.";
 
+// --- Photo: upload OU URL (champ libre avec validation) ---
+$photoSource = (string)($_POST['photo_source'] ?? 'upload');
+$photoUrl = trim((string)($_POST['photo_url'] ?? ''));
+$photoKeep = $_POST['photo_keep'] ?? null;
+
+if ($photoSource === 'url') {
+    if ($photoUrl === '') {
+        $errors[] = "Veuillez saisir une URL d'image.";
+    } elseif (!filter_var($photoUrl, FILTER_VALIDATE_URL)) {
+        $errors[] = "URL invalide.";
+    } else {
+        $u = parse_url($photoUrl);
+        $scheme = strtolower($u['scheme'] ?? '');
+        if (!in_array($scheme, ['http','https'], true)) {
+            $errors[] = "L'URL doit commencer par http ou https.";
+        } else {
+            $path = strtolower($u['path'] ?? '');
+            if (!preg_match('/\.(jpe?g|png|webp)$/', $path)) {
+                $errors[] = "L'URL doit pointer vers une image (.jpg, .png, .webp).";
+            } else {
+                $photoKeep = $photoUrl; // on stocke l'URL directement dans photo_path
+            }
+        }
+    }
+}
+
+
             if (!$errors) {
-                Book::update($id, Auth::id(), $data, $_FILES['photo'] ?? null, $_POST['photo_keep'] ?? null);
+                $photoFile = ($photoSource === 'upload') ? ($_FILES['photo'] ?? null) : null;
+                Book::update($id, Auth::id(), $data, $photoFile, $photoKeep);
                 Helpers::redirect('/mon-compte');
             }
         }

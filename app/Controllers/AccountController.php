@@ -53,7 +53,7 @@ final class AccountController extends Controller
         $bsort = isset($_GET['bsort']) && (string)$_GET['bsort'] !== '' ? trim((string)$_GET['bsort']) : 'created_desc';
         $bpage = isset($_GET['bpage']) && ctype_digit((string)$_GET['bpage']) ? max(1, (int)$_GET['bpage']) : 1;
 
-        $bPerPage = 10;
+        $bPerPage = 5;
         $books = Book::byUserPaged(Auth::id(), $bq, $bstatus, $bpage, $bPerPage, $bsort);
         $bTotal = Book::countByUser(Auth::id(), $bq, $bstatus);
         $bTotalPages = max(1, (int)ceil($bTotal / $bPerPage));
@@ -73,26 +73,28 @@ final class AccountController extends Controller
 
     public function publicProfile(): void
     {
+        // Profil public accessible via /profil?id=xx
         $id = (int)($_GET['id'] ?? 0);
         $user = User::findById($id);
-		
-        $bq = trim((string)($_GET['bq'] ?? ''));
-        $bstatus = isset($_GET['bstatus']) && (string)$_GET['bstatus'] !== '' ? trim((string)$_GET['bstatus']) : 'all';
-        $bsort = isset($_GET['bsort']) && (string)$_GET['bsort'] !== '' ? trim((string)$_GET['bsort']) : 'created_desc';
-        $bpage = isset($_GET['bpage']) && ctype_digit((string)$_GET['bpage']) ? max(1, (int)$_GET['bpage']) : 1;
 
-        $bPerPage = 10;
-        //$books = Book::byUserPaged(Auth::id(), $bq, $bstatus, $bpage, $bPerPage, $bsort);
-        $bTotal = Book::countByUser(Auth::id(), $bq, $bstatus);
-        $bTotalPages = max(1, (int)ceil($bTotal / $bPerPage));
-		
         if (!$user) {
             http_response_code(404);
             (new ErrorController())->notFound();
             return;
         }
-        $books = Book::byUser($id);
-		
+
+        // --- Pagination + filtres sur la bibliothèque du profil ---
+        $bq = trim((string)($_GET['bq'] ?? ''));
+        $bstatus = isset($_GET['bstatus']) && (string)$_GET['bstatus'] !== '' ? trim((string)$_GET['bstatus']) : 'all';
+        $bsort = isset($_GET['bsort']) && (string)$_GET['bsort'] !== '' ? trim((string)$_GET['bsort']) : 'created_desc';
+        $bpage = isset($_GET['bpage']) && ctype_digit((string)$_GET['bpage']) ? max(1, (int)$_GET['bpage']) : 1;
+
+        // ✅ demandé: 5 enregistrements par page sur le profil
+        $bPerPage = 5;
+
+        $books = Book::byUserPaged((int)$user['id'], $bq, $bstatus, $bpage, $bPerPage, $bsort);
+        $bTotal = Book::countByUser((int)$user['id'], $bq, $bstatus);
+        $bTotalPages = max(1, (int)ceil($bTotal / $bPerPage));
 
         $this->render('account/public', [
             'user' => $user,
@@ -102,6 +104,7 @@ final class AccountController extends Controller
             'bstatus' => $bstatus,
             'bsort' => $bsort,
             'bpage' => $bpage,
+            'bTotal' => $bTotal,
             'bTotalPages' => $bTotalPages,
         ]);
     }

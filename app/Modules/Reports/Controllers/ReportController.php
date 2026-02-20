@@ -21,12 +21,23 @@ final class ReportController extends Controller
     {
         Auth::requireLogin();
 
+        // Pagination
         $page = isset($_GET['page']) && ctype_digit((string)$_GET['page']) ? max(1, (int)$_GET['page']) : 1;
         $perPage = 10;
 
-        $items = Report::listForUser(Auth::id(), $page, $perPage);
-        $total = Report::countForUser(Auth::id());
-        $totalPages = (int)ceil($total / $perPage);
+        // Filtres (GET) — on reste tolérant si un paramètre est absent
+        $filters = [
+            'q'      => trim((string)($_GET['q'] ?? '')),
+            'status' => trim((string)($_GET['status'] ?? '')),
+            'type'   => trim((string)($_GET['type'] ?? '')),
+            'reason' => trim((string)($_GET['reason'] ?? '')),
+            'sort'   => trim((string)($_GET['sort'] ?? 'date')),
+            'dir'    => trim((string)($_GET['dir'] ?? 'desc')),
+        ];
+
+        $items = Report::paginateForUser(Auth::id(), $page, $perPage, $filters);
+        $total = Report::countForUserFiltered(Auth::id(), $filters);
+        $totalPages = max(1, (int)ceil($total / $perPage));
 
         $this->render('modules/reports/index', [
             'reports' => $items,
@@ -35,6 +46,7 @@ final class ReportController extends Controller
             'totalPages' => $totalPages,
             'csrf' => Csrf::token(),
             'reasons' => self::REASONS,
+            'filters' => $filters,
         ]);
     }
 
