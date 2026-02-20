@@ -1,17 +1,4 @@
 <?php
-/**
- * app/Models/Message.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 
 /*
  * TomTroc — Model
@@ -34,11 +21,6 @@ final class Message
 {
     private static ?bool $hasReadColumn = null;
 
-    /**
-     * Méthode : supportsReadFlag()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     private static function supportsReadFlag(): bool
     {
         if (self::$hasReadColumn !== null) {
@@ -57,11 +39,6 @@ final class Message
         return self::$hasReadColumn;
     }
 
-    /**
-     * Méthode : forConversation()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function forConversation(int $conversationId, int $page = 1, int $perPage = 10): array
     {
         // Pagination du fil (10 messages par page par défaut)
@@ -85,11 +62,6 @@ final class Message
         return $stmt->fetchAll();
     }
 
-    /**
-     * Méthode : countForConversation()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function countForConversation(int $conversationId): int
     {
         $pdo = Database::pdo();
@@ -99,11 +71,6 @@ final class Message
         return (int)($row['cnt'] ?? 0);
     }
 
-/**
- * Méthode : create()
- * Rôle : logique du composant (Controller/Model/Core).
- * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
- */
 public static function create(int $conversationId, int $senderId, string $body): void
     {
         $pdo = Database::pdo();

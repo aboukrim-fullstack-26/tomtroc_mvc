@@ -3,36 +3,34 @@
  * app/Core/ModuleManager.php
  *
  * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
+ * - Centralise l'activation/désactivation des modules (bundles) TomTroc.
+ * - Permet au Router et aux Views (menu/header) de savoir quelles fonctionnalités sont actives.
  *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
+ * Ordre d'exécution typique :
+ * public/index.php → app/bootstrap.php → Router->run()
+ *   → Router->defineRoutes() → ModuleManager->registerRoutes($router)
+ *   → Controller → Model(s) → View(s)
  *
- * @author aboukrim
- * @date 2026-02-10
+ * @author @aboukrim
  */
 
 namespace App\Core;
 
 final class ModuleManager
 {
+    /**
+     * @var array<string,bool>  ex: ['Auth'=>true, 'Book'=>true, ...]
+     */
     private array $modules;
 
-    /**
-     * Méthode : __construct()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function __construct()
     {
+        // Source unique de vérité : app/config/modules.php
         $this->modules = require __DIR__ . '/../config/modules.php';
     }
 
     /**
-     * Méthode : isEnabled()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
+     * Indique si un module est activé.
      */
     public function isEnabled(string $module): bool
     {
@@ -40,18 +38,37 @@ final class ModuleManager
     }
 
     /**
-     * Méthode : registerRoutes()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
+     * Enregistre les routes de tous les modules activés.
+     *
+     * Convention :
+     * - Un module expose soit une méthode statique ::register(Router $router)
+     * - Soit une méthode d'instance ->registerRoutes(Router $router)
      */
     public function registerRoutes(Router $router): void
     {
         foreach ($this->modules as $module => $enabled) {
-            if (!$enabled) continue;
+            if (!$enabled) {
+                continue;
+            }
 
             $class = "\\App\\Modules\\{$module}\\{$module}Module";
-            if (class_exists($class)) {
+
+            if (!class_exists($class)) {
+                // Module activé mais classe absente : on ignore pour éviter de casser l'app
+                continue;
+            }
+
+            // On instancie au cas où le module utilise registerRoutes()
+            $instance = new $class();
+
+            if (method_exists($instance, 'registerRoutes')) {
+                $instance->registerRoutes($router);
+                continue;
+            }
+
+            if (method_exists($class, 'register')) {
                 $class::register($router);
+                continue;
             }
         }
     }

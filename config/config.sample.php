@@ -1,17 +1,4 @@
 <?php
-/**
- * config/config.sample.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 // Copiez ce fichier en config.php et renseignez vos informations.
 // IMPORTANT: ne versionnez pas config.php (déjà dans .gitignore)
 

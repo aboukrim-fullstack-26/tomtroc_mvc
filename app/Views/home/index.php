@@ -1,17 +1,4 @@
 <?php
-/**
- * app/Views/home/index.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 use App\Core\Helpers;
 ?>
 <section class="hero container">
@@ -64,6 +51,74 @@ use App\Core\Helpers;
   </div>
 </section>
 
+
+<?php if (!empty($topBooks) && isset($modules) && $modules->isEnabled('TopBooks')): ?>
+<section class="container section topbooks-home">
+  <div class="section-head">
+    <h2 class="center section-title">Top 5 livres</h2>
+    <a class="btn outline" href="<?= Helpers::url('/top-livres') ?>">Voir le classement</a>
+  </div>
+
+  <div class="topbooks-slider-wrap">
+    <button class="slider-btn prev" type="button" aria-label="Précédent">‹</button>
+
+    <div class="topbooks-slider" id="topbooks-slider">
+      <?php foreach ($topBooks as $tb): ?>
+        <?php
+          $photo = $tb['photo_path'] ?? '';
+          if ($photo && str_starts_with($photo, 'http')) $src = $photo;
+          elseif ($photo) $src = BASE_URL . '/' . $photo;
+          else $src = BASE_URL . '/assets/img/book-placeholder.jpg';
+        ?>
+        <article class="topbook-card">
+          <a class="topbook-link" href="<?= Helpers::url('/livre?id=' . (int)$tb['id']) ?>">
+            <img class="topbook-img" src="<?= htmlspecialchars($src) ?>" alt="<?= Helpers::e($tb['title']) ?>">
+            <div class="topbook-meta">
+              <div class="topbook-title"><?= Helpers::e($tb['title']) ?></div>
+              <div class="muted"><?= Helpers::e($tb['author'] ?? '') ?></div>
+            </div>
+          </a>
+
+          <?php if ($modules->isEnabled('Exchange') && \App\Core\Auth::check() && (int)($tb['user_id'] ?? 0) !== \App\Core\Auth::id()): ?>
+            <?php if (!empty($tb['has_pending_exchange'])): ?>
+              <div class="exchange-pending" style="margin-top:10px; font-size:14px; padding:8px 12px; border-radius:8px; background:#fff3cd; color:#856404; text-align:center;">
+                Demande d’échange en attente
+              </div>
+            <?php else: ?>
+            <form class="exchange-cta" method="post" action="<?= Helpers::url('/demande/creer') ?>">
+              <input type="hidden" name="csrf_token" value="<?= Helpers::e($csrf ?? '') ?>">
+              <input type="hidden" name="book_id" value="<?= (int)$tb['id'] ?>">
+              <input type="hidden" name="owner_id" value="<?= (int)($tb['user_id'] ?? 0) ?>">
+              <input type="hidden" name="message" value="Bonjour, je souhaite échanger ce livre.">
+              <button class="btn outline btn-small" type="submit">Demander un échange</button>
+            </form>
+            <?php endif; ?>
+          <?php endif; ?>
+        </article>
+      <?php endforeach; ?>
+    </div>
+
+    <button class="slider-btn next" type="button" aria-label="Suivant">›</button>
+  </div>
+
+  <script>
+    (function(){
+      var s = document.getElementById('topbooks-slider');
+      if(!s) return;
+      var prev = document.querySelector('.topbooks-home .slider-btn.prev');
+      var next = document.querySelector('.topbooks-home .slider-btn.next');
+      function step(dir){
+        var card = s.querySelector('.topbook-card');
+        var w = card ? (card.getBoundingClientRect().width + 18) : 320;
+        s.scrollBy({ left: dir * w, behavior: 'smooth' });
+      }
+      prev && prev.addEventListener('click', function(){ step(-1); });
+      next && next.addEventListener('click', function(){ step(1); });
+    })();
+  </script>
+</section>
+<?php endif; ?>
+
 <section class="container section">
   <h2 class="center">Comment ça marche ?</h2>
   <p class="center muted">Échanger des livres avec TomTroc c'est simple et amusant ! Suivez ces étapes pour commencer :</p>
@@ -106,3 +161,4 @@ use App\Core\Helpers;
     </div>
   </div>
 </section>
+

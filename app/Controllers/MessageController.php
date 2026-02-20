@@ -1,17 +1,4 @@
 <?php
-/**
- * app/Controllers/MessageController.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 
 /*
  * TomTroc — Controller
@@ -34,11 +21,6 @@ use App\Models\Book;
 
 final class MessageController extends Controller
 {
-    /**
-     * Méthode : index()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function index(): void
     {
         Auth::requireLogin();
@@ -73,11 +55,6 @@ final class MessageController extends Controller
     }
 
     // démarrer une conversation (depuis un livre / profil) ou envoyer dans une conv existante
-    /**
-     * Méthode : startOrSend()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function startOrSend(): void
     {
         Auth::requireLogin();
@@ -97,6 +74,16 @@ final class MessageController extends Controller
                 exit('Conversation inaccessible.');
             }
             Message::create($convId, Auth::id(), $body);
+
+            // ✅ Notification au destinataire (si module Notifications présent)
+            $notifClass = '\\App\\Modules\\Notifications\\Models\\Notification';
+            if (class_exists($notifClass)) {
+                $toId = (int)($conv['peer_user_id'] ?? 0);
+                if ($toId > 0) {
+                    $notifClass::create($toId, 'message', 'Nouveau message', '/messagerie?c=' . $convId);
+                }
+            }
+
             Helpers::redirect('/messagerie?c=' . $convId);
         }
 
@@ -108,6 +95,12 @@ final class MessageController extends Controller
 
         $newId = Conversation::getOrCreate(Auth::id(), $toUserId);
         Message::create($newId, Auth::id(), $body);
+
+        // ✅ Notification au destinataire (si module Notifications présent)
+        $notifClass = '\\App\\Modules\\Notifications\\Models\\Notification';
+        if (class_exists($notifClass)) {
+            $notifClass::create($toUserId, 'message', 'Nouveau message', '/messagerie?c=' . $newId);
+        }
 
         Helpers::redirect('/messagerie?c=' . $newId);
     }

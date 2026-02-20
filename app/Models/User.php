@@ -1,17 +1,4 @@
 <?php
-/**
- * app/Models/User.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 
 /*
  * TomTroc — Model
@@ -26,11 +13,6 @@ use App\Core\Database;
 
 final class User
 {
-    /**
-     * Méthode : findById()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function findById(int $id): ?array
     {
         $stmt = Database::pdo()->prepare('SELECT id, pseudo, email, avatar_path, created_at, password_hash FROM users WHERE id = ?');
@@ -39,11 +21,6 @@ final class User
         return $u ?: null;
     }
 
-    /**
-     * Méthode : findByEmail()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function findByEmail(string $email): ?array
     {
         $stmt = Database::pdo()->prepare('SELECT * FROM users WHERE email = ?');
@@ -52,11 +29,6 @@ final class User
         return $u ?: null;
     }
 
-    /**
-     * Méthode : findByPseudo()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function findByPseudo(string $pseudo): ?array
     {
         $stmt = Database::pdo()->prepare('SELECT * FROM users WHERE pseudo = ?');
@@ -65,11 +37,6 @@ final class User
         return $u ?: null;
     }
 
-    /**
-     * Méthode : create()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function create(string $pseudo, string $email, string $password): int
     {
         $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -78,11 +45,6 @@ final class User
         return (int)Database::pdo()->lastInsertId();
     }
 
-    /**
-     * Méthode : update()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function update(int $id, string $pseudo, string $email, ?string $password, ?array $avatarFile, ?string $avatarKeep): void
     {
         $pdo = Database::pdo();

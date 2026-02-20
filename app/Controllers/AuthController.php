@@ -1,17 +1,4 @@
 <?php
-/**
- * app/Controllers/AuthController.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 
 /*
  * TomTroc — Controller
@@ -31,11 +18,6 @@ use App\Models\User;
 
 final class AuthController extends Controller
 {
-    /**
-     * Méthode : register()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function register(): void
     {
         $errors = [];
@@ -63,11 +45,6 @@ final class AuthController extends Controller
         $this->render('auth/register', ['errors' => $errors, 'csrf' => Csrf::token()]);
     }
 
-    /**
-     * Méthode : login()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function login(): void
     {
         $errors = [];
@@ -89,11 +66,6 @@ final class AuthController extends Controller
         $this->render('auth/login', ['errors' => $errors, 'csrf' => Csrf::token()]);
     }
 
-    /**
-     * Méthode : logout()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function logout(): void
     {
         Auth::logout();

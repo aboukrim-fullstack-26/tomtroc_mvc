@@ -1,17 +1,4 @@
 <?php
-/**
- * app/Controllers/AccountController.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 
 /*
  * TomTroc — Controller
@@ -32,11 +19,6 @@ use App\Models\User;
 
 final class AccountController extends Controller
 {
-    /**
-     * Méthode : index()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function index(): void
     {
         Auth::requireLogin();
@@ -65,6 +47,7 @@ final class AccountController extends Controller
         }
 
         // --- Bibliothèque (tableau) : pagination + filtre (GET) ---
+		
         $bq = trim((string)($_GET['bq'] ?? ''));
         $bstatus = isset($_GET['bstatus']) && (string)$_GET['bstatus'] !== '' ? trim((string)$_GET['bstatus']) : 'all';
         $bsort = isset($_GET['bsort']) && (string)$_GET['bsort'] !== '' ? trim((string)$_GET['bsort']) : 'created_desc';
@@ -88,21 +71,28 @@ final class AccountController extends Controller
         ]);
     }
 
-    /**
-     * Méthode : publicProfile()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function publicProfile(): void
     {
         $id = (int)($_GET['id'] ?? 0);
         $user = User::findById($id);
+		
+        $bq = trim((string)($_GET['bq'] ?? ''));
+        $bstatus = isset($_GET['bstatus']) && (string)$_GET['bstatus'] !== '' ? trim((string)$_GET['bstatus']) : 'all';
+        $bsort = isset($_GET['bsort']) && (string)$_GET['bsort'] !== '' ? trim((string)$_GET['bsort']) : 'created_desc';
+        $bpage = isset($_GET['bpage']) && ctype_digit((string)$_GET['bpage']) ? max(1, (int)$_GET['bpage']) : 1;
+
+        $bPerPage = 10;
+        //$books = Book::byUserPaged(Auth::id(), $bq, $bstatus, $bpage, $bPerPage, $bsort);
+        $bTotal = Book::countByUser(Auth::id(), $bq, $bstatus);
+        $bTotalPages = max(1, (int)ceil($bTotal / $bPerPage));
+		
         if (!$user) {
             http_response_code(404);
             (new ErrorController())->notFound();
             return;
         }
         $books = Book::byUser($id);
+		
 
         $this->render('account/public', [
             'user' => $user,

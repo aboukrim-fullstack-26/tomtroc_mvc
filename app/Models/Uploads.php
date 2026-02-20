@@ -1,17 +1,4 @@
 <?php
-/**
- * app/Models/Uploads.php
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 
 /*
  * TomTroc — Model
@@ -27,11 +14,6 @@ use RuntimeException;
 
 class Uploads
 {
-    /**
-     * Méthode : storeImage()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public static function storeImage(?array $file): ?string
     {
         // Image facultative

@@ -1,14 +1,3 @@
-/*
- * public/assets/css/style.css
- * 
- * Rôle :
- * - Styles globaux du site TomTroc (maquettes PNG / pixel-perfect).
- * - Commentaires ajoutés pour faciliter maintenance & debug.
- *
- * @author aboukrim
- * @date 2026-02-10
- */
-
 /* Base */
 :root{
   /* Palette & tokens visuels (calés sur les maquettes) */
@@ -721,3 +710,290 @@ button.link.red{color:var(--red);}
 
 /* Home: espace entre les cards “derniers livres” et le bouton */
 .books-grid + .center{margin-top:28px;}
+
+
+/* FAVORIS - UI */
+.book-actions{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin-top:18px;
+}
+
+.fav-btn{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  border:1px solid #e8e1d8;
+  background:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  color:#111;
+}
+
+.fav-btn svg{
+  width:22px;
+  height:22px;
+}
+
+.fav-btn svg path{
+  fill:transparent;
+  stroke:currentColor;
+  stroke-width:1.8;
+}
+
+.fav-btn.is-active{
+  background:#0aa36c10;
+  border-color:#0aa36c55;
+  color:#0aa36c;
+}
+
+.fav-btn.is-active svg path{
+  fill:currentColor;
+  stroke:currentColor;
+}
+
+.favorites-grid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(220px, 1fr));
+  gap:22px;
+  margin-top:28px;
+}
+
+.favorite-card{
+  background:#fff;
+  border:1px solid #eee6dd;
+  border-radius:14px;
+  padding:18px;
+}
+
+.favorite-actions{
+  display:flex;
+  gap:10px;
+  margin-top:14px;
+}
+
+@media (max-width: 980px){
+  .favorites-grid{ grid-template-columns:repeat(2, minmax(220px, 1fr)); }
+}
+@media (max-width: 640px){
+  .favorites-grid{ grid-template-columns:1fr; }
+  .book-actions{ flex-direction:column; align-items:stretch; }
+  .fav-btn{ width:100%; height:52px; }
+}
+
+/* =========================================================
+   FIX AVATAR PROPRIÉTAIRE — page détail livre uniquement
+   (évite l'avatar géant non conforme maquette)
+   ========================================================= */
+
+.book-hero.book-single .owner{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  margin-bottom: 22px;
+}
+
+/* Force une taille "maquette" (petit avatar rond) */
+.book-hero.book-single .owner .avatar{
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+  object-fit: cover !important;
+  flex: 0 0 44px !important;
+  display: block;
+}
+
+/* Si ton CSS met un fond/placeholder énorme via pseudo-element */
+.book-hero.book-single .owner .avatar::before,
+.book-hero.book-single .owner .avatar::after{
+  content: none !important;
+}
+
+/* Lien pseudo propre */
+.book-hero.book-single .owner a{
+  display: inline-block;
+  line-height: 1.2;
+}
+
+/* =========================================================
+   MODULE RATINGS — étoiles (détail livre)
+   ========================================================= */
+
+.rating-block{
+  margin-top: 18px;
+  padding-top: 6px;
+}
+
+.rating-summary{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin: 8px 0 12px;
+}
+
+.stars{ display:inline-flex; gap:4px; font-size:18px; line-height:1; }
+.star{ opacity:.28; }
+.star.is-on{ opacity:1; }
+
+.rating-form{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+/* Pattern radio+label pour faire des étoiles cliquables */
+.rating-choices{
+  display:inline-flex;
+  flex-direction: row-reverse;
+  gap:6px;
+}
+
+.rating-choices input{ display:none; }
+
+.rating-choices label{
+  cursor:pointer;
+  font-size:20px;
+  line-height:1;
+  opacity:.35;
+  user-select:none;
+}
+
+.rating-choices input:checked ~ label,
+.rating-choices label:hover,
+.rating-choices label:hover ~ label{
+  opacity:1;
+}
+
+
+
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;}
+.section-title{margin:0;}
+
+
+/* ===== TopBooks (Home + page) ===== */
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px;}
+.section-title{margin:0;}
+.books-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px;}
+@media(max-width:980px){.books-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:640px){.books-grid{grid-template-columns:1fr;}}
+.book-card__img{width:100%;height:220px;object-fit:cover;display:block;border-radius:12px;}
+.book-card__body{padding:10px 0;}
+.book-card__title{margin:0 0 6px 0;font-size:16px;}
+.exchange-cta{margin-top:10px;}
+.btn-small{padding:10px 14px;font-size:14px;line-height:1;}
+
+
+/* ===== TopBooks slider (Home) ===== */
+.topbooks-home .section-head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px;}
+.topbooks-slider-wrap{position:relative;}
+.topbooks-slider{
+  display:flex;
+  gap:18px;
+  overflow:auto;
+  padding:4px 44px 10px;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+}
+.topbook-card{
+  flex:0 0 240px;
+  scroll-snap-align:start;
+}
+.topbook-link{display:block;text-decoration:none;color:inherit;}
+.topbook-img{
+  width:100%;
+  height:210px;
+  object-fit:cover;
+  border-radius:14px;
+  display:block;
+}
+.topbook-meta{padding:10px 0 0;}
+.topbook-title{font-weight:700;margin:0 0 6px;}
+.slider-btn{
+  position:absolute;top:92px;
+  width:36px;height:36px;border-radius:999px;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;line-height:1;
+}
+.slider-btn.prev{left:0;}
+.slider-btn.next{right:0;}
+.slider-btn:hover{transform:translateY(-1px);}
+
+/* Static pages */
+.static-page{max-width:860px;}
+.static-list{margin:8px 0 0 18px;}
+
+
+/* Exchange/Notifications modules: filtres + pagination (non intrusif) */
+.filters-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:14px 0 18px;}
+.filters-bar input[type=text]{min-width:220px;}
+.btn-sm{padding:10px 14px;font-size:14px;}
+.exchange-mini{margin-top:10px;}
+.pagination{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+.pagination a{padding:8px 12px;border:1px solid rgba(0,0,0,.12);border-radius:10px;text-decoration:none;}
+.pagination a.active{font-weight:700;}
+.table-wrap{overflow:auto;}
+.table{width:100%;border-collapse:collapse;}
+.table th,.table td{padding:12px 10px;border-bottom:1px solid rgba(0,0,0,.08);vertical-align:top;}
+.inline{display:inline-block;margin-right:8px;}
+
+
+/* ===== Module Exchange (safe additions) ===== */
+.badge.badge-outline{
+  background: transparent;
+  border: 1px solid currentColor;
+}
+
+.exchange-info{
+  margin-top: 8px;
+}
+
+.exchange-history-block{
+  margin-top: 16px;
+}
+
+.exchange-history-grid{
+  display: grid;
+  gap: 10px;
+}
+
+.exchange-history-item{
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.exchange-history-top{
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.exchange-history-user{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.exchange-history-msg{
+  margin-top: 6px;
+}
+
+.exchange-pending
+{
+    background: #fff3cd;
+    color: #856404;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+    margin-top: 8px;
+}

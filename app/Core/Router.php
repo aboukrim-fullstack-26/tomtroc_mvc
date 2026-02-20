@@ -1,17 +1,4 @@
 <?php
-/**
- * Router (résolution URL → Controller::méthode)
- *
- * Rôle :
- * - Point d’entrée / composant du MVC TomTroc.
- * - Commentaires ajoutés pour faciliter debug & évolutions (V4 stable).
- *
- * Ordre d’exécution (général) :
- * public/index.php → app/bootstrap.php → Router → Controller → Model(s) → View(s)
- *
- * @author aboukrim
- * @date 2026-02-10
- */
 
 /*
  * TomTroc — Router (Front Controller)
@@ -33,31 +20,16 @@ class Router
         'POST' => [],
     ];
 
-    /**
-     * Méthode : get()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function get(string $path, array $action): void
     {
         $this->routes['GET'][$this->normalize($path)] = $action;
     }
 
-    /**
-     * Méthode : post()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function post(string $path, array $action): void
     {
         $this->routes['POST'][$this->normalize($path)] = $action;
     }
 
-    /**
-     * Méthode : run()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function run(): void
     {
         $this->defineRoutes();
@@ -78,6 +50,36 @@ class Router
         $action = $this->routes[$method][$path] ?? null;
 
         if (!$action) {
+            // Si une route n'existe pas, on tente d'expliquer si c'est un module désactivé.
+            $modules = new \App\Core\ModuleManager();
+
+            $disabledMap = [
+                '/favoris' => 'Favorites',
+                '/favori' => 'Favorites',
+                '/favori/ajouter' => 'Favorites',
+                '/favori/supprimer' => 'Favorites',
+                '/mes-signalements' => 'Reports',
+                '/signalement/livre' => 'Reports',
+                '/messagerie' => 'Message',
+                '/messages' => 'Message',
+                '/message/nouveau' => 'Message',
+                '/livres' => 'Book',
+                '/livre' => 'Book',
+                '/livre/creer' => 'Book',
+                '/livre/editer' => 'Book',
+                '/livre/supprimer' => 'Book',
+                '/connexion' => 'Auth',
+                '/inscription' => 'Auth',
+                '/deconnexion' => 'Auth',
+            ];
+
+            $modName = $disabledMap[$path] ?? null;
+            if ($modName && !$modules->isEnabled($modName)) {
+                http_response_code(503);
+                echo "Module désactivé : " . htmlspecialchars($modName);
+                return;
+            }
+
             http_response_code(404);
             echo "404 - Page introuvable";
             return;
@@ -102,73 +104,25 @@ class Router
         $controller->$methodName();
     }
 
-    /**
-     * Méthode : dispatch()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     public function dispatch(): void
     {
         $this->run();
     }
 
-    /**
-     * Méthode : defineRoutes()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     private function defineRoutes(): void
     {
-        // Home
+        // Core
         $this->get('/', [\App\Controllers\HomeController::class, 'index']);
 
-        $modules = new ModuleManager();
+        // Pages statiques (footer)
+        $this->get('/politique-confidentialite', [\App\Controllers\PagesController::class, 'privacy']);
+        $this->get('/mentions-legales', [\App\Controllers\PagesController::class, 'legal']);
+
+        // Modules (activables/désactivables via config/modules.php)
+        $modules = new \App\Core\ModuleManager();
         $modules->registerRoutes($this);
-
-        // Livres
-        $this->get('/livres', [\App\Controllers\BookController::class, 'index']);
-        $this->get('/livre', [\App\Controllers\BookController::class, 'show']); // ?id=
-
-        // Gestion des livres (Mon compte)
-        $this->get('/livre/creer', [\App\Controllers\BookController::class, 'create']);
-        $this->post('/livre/creer', [\App\Controllers\BookController::class, 'create']);
-        $this->get('/livre/editer', [\App\Controllers\BookController::class, 'edit']); // ?id=
-        $this->post('/livre/editer', [\App\Controllers\BookController::class, 'edit']); // ?id=
-        $this->post('/livre/supprimer', [\App\Controllers\BookController::class, 'delete']);
-
-
-        // Auth
-        /*$this->get('/connexion', [\App\Controllers\AuthController::class, 'loginForm']);
-        $this->post('/connexion', [\App\Controllers\AuthController::class, 'login']);
-        $this->get('/inscription', [\App\Controllers\AuthController::class, 'registerForm']);
-        $this->post('/inscription', [\App\Controllers\AuthController::class, 'register']);
-        $this->get('/deconnexion', [\App\Controllers\AuthController::class, 'logout']);*/
-		
-		// Auth (ton controller gère GET + POST dans les mêmes méthodes)
-		$this->get('/connexion', [\App\Controllers\AuthController::class, 'login']);
-		$this->post('/connexion', [\App\Controllers\AuthController::class, 'login']);
-
-		$this->get('/inscription', [\App\Controllers\AuthController::class, 'register']);
-		$this->post('/inscription', [\App\Controllers\AuthController::class, 'register']);
-
-		$this->get('/deconnexion', [\App\Controllers\AuthController::class, 'logout']);
-
-        // Compte
-        $this->get('/mon-compte', [\App\Controllers\AccountController::class, 'index']);
-        $this->post('/mon-compte', [\App\Controllers\AccountController::class, 'index']); // POST: enregistrer profil
-        $this->get('/profil', [\App\Controllers\AccountController::class, 'publicProfile']); // ?id=
-
-        // Messagerie (✅ maquette + alias)
-        $this->get('/messagerie', [\App\Controllers\MessageController::class, 'index']);
-        $this->get('/messages', [\App\Controllers\MessageController::class, 'index']);
-        $this->post('/message/nouveau', [\App\Controllers\MessageController::class, 'startOrSend']);
     }
 
-    /**
-     * Méthode : normalize()
-     * Rôle : logique du composant (Controller/Model/Core).
-     * Exécution : appelée par le Router ou par une autre couche (selon le fichier).
-     */
     private function normalize(string $path): string
     {
         $path = '/' . trim($path, '/');
